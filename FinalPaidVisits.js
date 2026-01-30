@@ -40,10 +40,12 @@ function publishFinalWorkbookCopy() {
   const copy = DriveApp.getFileById(ss.getId()).makeCopy(finalName);
 
   // ---- Move into period folder ----
-  periodFolder.addFile(copy);
+    periodFolder.addFile(copy);
   DriveApp.getRootFolder().removeFile(copy);
+}  // <-- ADD THIS
 
 /************ WRITE + FORMAT ************/
+
 
 function exportPBPTFinal_() {
   const ss = SpreadsheetApp.getActive();
