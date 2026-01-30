@@ -42,13 +42,6 @@ function publishFinalWorkbookCopy() {
   // ---- Move into period folder ----
   periodFolder.addFile(copy);
   DriveApp.getRootFolder().removeFile(copy);
-}
-function onOpen_FinalPaidVisits_() {
-  SpreadsheetApp.getUi()
-    .createMenu("Payroll")
-    .addItem("Publish Final Snapshot", "publishFinalWorkbookCopy")
-    .addToUi();
-}
 
 /************ WRITE + FORMAT ************/
 
