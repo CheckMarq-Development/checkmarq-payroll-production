@@ -68,15 +68,16 @@ const root = getOrCreateFolder_(parent, rootFolderName);
     s.getName().endsWith("_Payroll")
   );
 
-payrollSheets.forEach(sheet => {
-  resetPayrollPdfCursor_(); // ← ADD THIS LINE
+resetPayrollPdfCursor_(); // ✅ reset ONCE per full run (manual fresh start)
 
+payrollSheets.forEach(sheet => {
   const bucket = sheet.getName().split("_")[0];
   const bucketFolder = getOrCreateFolder_(periodFolder, bucket);
   const payrollFolder = getOrCreateFolder_(bucketFolder, "Payroll");
 
   processPayrollSheet_(ss, sheet, periodStart, periodEnd, bucketFolder);
 });
+
 
 }
 
