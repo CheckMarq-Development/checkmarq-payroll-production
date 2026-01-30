@@ -85,3 +85,11 @@ function normKey_(v) {
     .trim()
     .toUpperCase();
 }
+
+
+function num_(v){
+  if (v === null || v === undefined || v === "") return 0;
+  if (typeof v === "number") return isNaN(v) ? 0 : v;
+  const n = parseFloat(String(v).replace(/[$,]/g,""));
+  return isNaN(n) ? 0 : n;
+}

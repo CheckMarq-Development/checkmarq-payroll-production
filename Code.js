@@ -364,13 +364,7 @@ function writePayrollSheet_(ss, name, headers, rows) {
   sh.getRange(1,1,1,headers.length).createFilter();
 }
 
-/************ NUM ************/
-function num_(v){
-  if (v === null || v === undefined || v === "") return 0;
-  if (typeof v === "number") return isNaN(v) ? 0 : v;
-  const n = parseFloat(String(v).replace(/[$,]/g,""));
-  return isNaN(n) ? 0 : n;
-}
+
 function resetPdfState_() {
   PropertiesService.getScriptProperties().deleteAllProperties();
   Logger.log("PDF state reset");

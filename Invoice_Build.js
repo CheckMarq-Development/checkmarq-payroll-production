@@ -153,13 +153,7 @@ if (da !== db) return da - db;
     .forEach((o, i) => (rows[i] = o.r));
 }
 
-/************ HELPERS ************/
-function num_(v) {
-  if (v === null || v === undefined || v === "") return 0;
-  if (typeof v === "number") return isNaN(v) ? 0 : v;
-  const n = parseFloat(String(v).replace(/[$,]/g, ""));
-  return isNaN(n) ? 0 : n;
-}
+
 // ---- Compatibility wrapper ----
 // Called by Recalculate Payroll & Invoices controller
 function buildInvoices() {
