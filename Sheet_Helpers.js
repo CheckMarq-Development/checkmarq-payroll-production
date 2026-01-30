@@ -1,6 +1,8 @@
 /***************************************************
  * SHEET HELPERS — SHARED
  ***************************************************/
+
+// ---- Drive helpers ----
 function getOrCreateSheet(name, headers) {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(name);
@@ -25,6 +27,8 @@ function getOrCreateSheet(name, headers) {
 
   return sheet;
 }
+
+// ---- Config / guardrails ----
 function assertPayPeriodConfigured_() {
   const ss = SpreadsheetApp.getActive();
   const admin = ss.getSheetByName("Admin_Config");
@@ -57,6 +61,7 @@ function assertPayPeriodConfigured_() {
   }
 }
 
+// ---- Column helpers ----
 function indexColumns_(headers, map) {
   const normalize = s =>
     String(s).toLowerCase().replace(/\u00a0/g, " ").trim();
@@ -73,11 +78,14 @@ function indexColumns_(headers, map) {
 
   return idx;
 }
+
+// ---- Sheet utilities ----
 function getOrCreateFolder_(parent, name) {
   const it = parent.getFoldersByName(name);
   return it.hasNext() ? it.next() : parent.createFolder(name);
 }
 
+// ---- Value normalization ----
 function normKey_(v) {
   return String(v == null ? "" : v)
     .replace(/\u00A0/g, " ")
@@ -85,7 +93,6 @@ function normKey_(v) {
     .trim()
     .toUpperCase();
 }
-
 
 function num_(v){
   if (v === null || v === undefined || v === "") return 0;

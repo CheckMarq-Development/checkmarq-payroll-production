@@ -364,12 +364,6 @@ function writePayrollSheet_(ss, name, headers, rows) {
   sh.getRange(1,1,1,headers.length).createFilter();
 }
 
-
-function resetPdfState_() {
-  PropertiesService.getScriptProperties().deleteAllProperties();
-  Logger.log("PDF state reset");
-}
-
 function exportPBPTFinal_() {
   const ss = SpreadsheetApp.getActive();
   const admin = ss.getSheetByName("Admin_Config");
