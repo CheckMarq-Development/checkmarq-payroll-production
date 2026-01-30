@@ -56,3 +56,48 @@ function cleanupTempSheets_() {
     .filter(s => s.getName().startsWith("__TMP_"))
     .forEach(s => ss.deleteSheet(s));
 }
+
+function recalculateStub_() {
+   assertPayPeriodConfigured_();
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActive();
+
+  // Guardrail
+  if (!ss.getSheetByName("Raw_All_Visits")) {
+    ui.alert("ERROR: Raw_All_Visits sheet not found.");
+    return;
+  }
+
+  try {
+    // 1. Payroll (D9 + D10)
+    buildPayrollAndSummary();
+
+
+    // 2. Summary (if you have it)
+    if (typeof buildPayrollSummary_ === "function") {
+      buildPayrollSummary_();
+    }
+
+    // 3. Invoices (if present)
+    if (typeof buildInvoices === "function") {
+      buildInvoices();
+    }
+
+    // 4. Audit (last, read-only)
+    if (typeof buildAuditTab === "function") {
+      buildAuditTab();
+    }
+
+    ui.alert(
+      "Recalculation complete:\n\n" +
+      "• Payroll rebuilt\n" +
+      "• Summary updated\n" +
+      "• Invoices rebuilt\n" +
+      "• Audit refreshed"
+    );
+
+  } catch (err) {
+    ui.alert("Recalculation FAILED:\n\n" + err.message);
+    throw err;
+  }
+}

@@ -284,3 +284,201 @@ function coerceToDate_(v) {
   const d = new Date(yyyy, mm - 1, dd);
   return isNaN(d.getTime()) ? null : d;
 }
+
+/************ IMPORT RAW DATA ************/
+function importRawData() {
+   assertPayPeriodConfigured_();
+  const ss = SpreadsheetApp.getActive();
+  const rawSheet = ss.getSheetByName(SHEET_NAMES.RAW);
+  if (!rawSheet) throw new Error("Missing Raw_All_Visits sheet");
+
+  const cfg = getAdminConfig_();
+  const folder = DriveApp.getFolderById(cfg["Payroll Reports Drive Folder ID"]);
+
+  // Get most recent Google Sheet
+  let latestFile = null;
+  let latestTime = 0;
+  const files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+  while (files.hasNext()) {
+    const f = files.next();
+    const t = f.getLastUpdated().getTime();
+    if (t > latestTime) {
+      latestTime = t;
+      latestFile = f;
+    }
+  }
+  if (!latestFile) throw new Error("No Google Sheets found in folder");
+
+  const src = SpreadsheetApp.open(latestFile).getSheets()[0];
+  const range = src.getDataRange();
+  const values = range.getValues();
+  const headers = values[0];
+  const rows = values.slice(1);
+
+  const statusIdx = headers.indexOf("Visit status");
+  const approvedIdx = headers.indexOf("Date when HA approved the Visit");
+
+  if (statusIdx === -1 || approvedIdx === -1) {
+    throw new Error("Required columns missing in source sheet");
+  }
+
+  const filtered = rows.filter(r => {
+    const status = String(r[statusIdx] || "").toLowerCase();
+    if (status === "rejected") return false;
+
+    const approvedDate = normalizeDate_(r[approvedIdx]);
+    if (!approvedDate) return false;
+
+    return approvedDate >= cfg.approvedFrom && approvedDate <= cfg.approvedTo;
+  });
+
+  // Rewrite Raw_All_Visits
+  rawSheet.clearContents();
+  rawSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  if (filtered.length) {
+    rawSheet.getRange(2, 1, filtered.length, headers.length).setValues(filtered);
+  }
+
+  applyColumnRules_(rawSheet);
+
+  SpreadsheetApp.getUi().alert(
+    `Imported ${filtered.length} rows from:\n${latestFile.getName()}`
+  );
+}
+
+/************ COLUMN RULES ************/
+function applyColumnRules_(sheet) {
+  // Hide G, H, J, M, N (1-based)
+  [7, 8, 10, 13, 14].forEach(c => sheet.hideColumns(c));
+
+  // Delete P if present
+  if (sheet.getLastColumn() >= 16) {
+    sheet.deleteColumn(16);
+  }
+}
+
+function buildPayrollBucket_(ss, bucket) {
+  const raw = ss.getSheetByName("Raw_All_Visits");
+  if (!raw || raw.getLastRow() < 2) {
+    throw new Error("Raw_All_Visits missing or empty");
+  }
+
+  const data = raw.getDataRange().getValues();
+  const headers = data[0];
+  const rows = data.slice(1);
+
+  const idx = {
+    first: headers.indexOf("Assigned Clinician First Name"),
+    last: headers.indexOf("Assigned Clinician Last Name"),
+    patient: headers.indexOf("Patient name"),
+    visit: headers.indexOf("Visit type"),
+    date: headers.indexOf("Visit scheduled date"),
+    ha: headers.indexOf("HA Name"),
+    pay: headers.indexOf("Price agreed between HA & Clinician")
+  };
+
+  Object.entries(idx).forEach(([k,v]) => {
+    if (v === -1) throw new Error(`Missing column: ${k}`);
+  });
+
+  const out = [];
+
+  rows.forEach(r => {
+    const ha = String(r[idx.ha] || "").trim();
+    if (!ha.startsWith(bucket + " ")) return;
+
+    const d = r[idx.date];
+    if (!(d instanceof Date) || isNaN(d)) return;
+
+    out.push([
+      r[idx.first],   // 0
+      r[idx.last],    // 1
+      r[idx.patient], // 2
+      r[idx.visit],   // 3
+      d,              // 4
+      "",             // 5 Rate blank in payroll
+      ha,             // 6
+      num_(r[idx.pay])// 7 Pay (can be 0)
+    ]);
+  });
+
+  stablePayrollSort_(out);
+
+  writePayrollSheet_(
+    ss,
+    `${bucket}_Payroll`,
+    ["First Name","Last Name","Patient Name","Visit Type","Date","Rate","HA Name","Pay"],
+    out
+  );
+}
+
+function recalculatePayrollOnly() {
+    assertPayPeriodConfigured_();
+  const ss = SpreadsheetApp.getActive();
+  buildPayrollBucket_(ss, "D9");
+  buildPayrollBucket_(ss, "D10");
+  SpreadsheetApp.getUi().alert("Payroll tabs rebuilt.");
+}
+
+function stablePayrollSort_(rows) {
+  rows
+    .map((r,i)=>({r,i}))
+    .sort((a,b)=>{
+      // 1. Scheduled Date
+      const d = cmpDate_(a.r[4], b.r[4]);
+      if (d) return d;
+
+      // 2. Patient Name
+      const p = cmpText_(a.r[2], b.r[2]);
+      if (p) return p;
+
+      // 3. Clinician Last
+      const l = cmpText_(a.r[1], b.r[1]);
+      if (l) return l;
+
+      // 4. Clinician First
+      const f = cmpText_(a.r[0], b.r[0]);
+      if (f) return f;
+
+      // 5. Visit Type
+      const v = cmpText_(a.r[3], b.r[3]);
+      if (v) return v;
+
+      return a.i - b.i; // stability
+    })
+    .forEach((o,i)=> rows[i] = o.r);
+}
+
+
+function cmpDate_(a,b){
+  const at = a instanceof Date ? a.getTime() : 0;
+  const bt = b instanceof Date ? b.getTime() : 0;
+  return at - bt;
+}
+
+function cmpText_(a,b){
+  return String(a || "").trim().localeCompare(String(b || "").trim());
+}
+
+function writePayrollSheet_(ss, name, headers, rows) {
+  let sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+
+  if (sh.getFilter()) sh.getFilter().remove();
+  sh.clearContents();
+
+  sh.getRange(1,1,1,headers.length).setValues([headers]);
+  if (rows.length) {
+    sh.getRange(2,1,rows.length,headers.length).setValues(rows);
+    sh.getRange(2,5,rows.length,1).setNumberFormat("m/d/yyyy");
+    sh.getRange(2,8,rows.length,1).setNumberFormat("$#,##0.00").setBackground("#d9ead3");
+  }
+
+  sh.getRange(1,1,1,headers.length)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground("#eeeeee");
+
+  sh.setFrozenRows(1);
+  sh.getRange(1,1,1,headers.length).createFilter();
+}

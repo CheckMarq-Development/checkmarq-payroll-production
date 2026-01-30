@@ -404,3 +404,7 @@ function __resetPayrollPdfState() {
   clearPayrollPdfTriggers_();
 }
 
+function resetPdfState_() {
+  PropertiesService.getScriptProperties().deleteProperty(PDF_STATE_KEY);
+  SpreadsheetApp.getUi().alert("PDF state reset.");
+}
