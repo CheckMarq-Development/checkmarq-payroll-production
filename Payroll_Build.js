@@ -273,16 +273,6 @@ summary.getRange(end, 6).setFormula(`=SUM(F2:F${end - 1})`); // Total
      .setFormula(`=IF(F${end}=${payroll.getName()}!F${totalRowIndex + 1},"YES","NO")`);
 }
 
-
-
-function normKey_(v) {
-  return String(v == null ? "" : v)
-    .replace(/\u00A0/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toUpperCase();
-}
-
 function coerceToDate_(v) {
   if (v instanceof Date && !isNaN(v.getTime())) return v;
 

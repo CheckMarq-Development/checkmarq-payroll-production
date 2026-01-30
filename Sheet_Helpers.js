@@ -77,3 +77,11 @@ function getOrCreateFolder_(parent, name) {
   const it = parent.getFoldersByName(name);
   return it.hasNext() ? it.next() : parent.createFolder(name);
 }
+
+function normKey_(v) {
+  return String(v == null ? "" : v)
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}

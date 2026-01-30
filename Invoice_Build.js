@@ -154,14 +154,6 @@ if (da !== db) return da - db;
 }
 
 /************ HELPERS ************/
-function normKey_(v) {
-  return String(v == null ? "" : v)
-    .replace(/\u00A0/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toUpperCase();
-}
-
 function num_(v) {
   if (v === null || v === undefined || v === "") return 0;
   if (typeof v === "number") return isNaN(v) ? 0 : v;
