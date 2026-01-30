@@ -100,3 +100,41 @@ function num_(v){
   const n = parseFloat(String(v).replace(/[$,]/g,""));
   return isNaN(n) ? 0 : n;
 }
+
+/************ DATE HELPERS ************/
+function normalizeDate_(v) {
+  if (v instanceof Date && !isNaN(v)) return v;
+  if (typeof v === "number") {
+    return new Date(Math.round((v - 25569) * 86400 * 1000));
+  }
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+}
+
+function endOfDay_(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+}
+
+
+/************ ADMIN CONFIG ************/
+function getAdminConfig_() {
+  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAMES.ADMIN);
+  if (!sh) throw new Error("Missing Admin_Config sheet");
+
+  const data = sh.getDataRange().getValues();
+  const cfg = {};
+  data.slice(1).forEach(r => {
+    if (r[0]) cfg[String(r[0]).trim()] = r[1];
+  });
+
+  const required = ["Payroll Reports Drive Folder ID", "Approved From", "Approved To"];
+  required.forEach(k => {
+    if (!cfg[k]) throw new Error(`Admin_Config missing: ${k}`);
+  });
+
+  cfg.approvedFrom = normalizeDate_(cfg["Approved From"]);
+  cfg.approvedTo   = endOfDay_(normalizeDate_(cfg["Approved To"]));
+
+  return cfg;
+}
