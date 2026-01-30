@@ -277,15 +277,3 @@ if (existing.hasNext()) {
   folder.createFile(blob);
 }
 
-
-
-/**
- * HELPERS (shared with Phase 6)
- */
-function getOrCreateFolder_(parent, name) {
-  const it = parent.getFoldersByName(name);
-  return it.hasNext() ? it.next() : parent.createFolder(name);
-}
-
-
-

@@ -310,10 +310,7 @@ while (existing.hasNext()) {
 }
 
 
-function getOrCreateFolder_(parent, name) {
-  const it = parent.getFoldersByName(name);
-  return it.hasNext() ? it.next() : parent.createFolder(name);
-}
+
 
 function formatCurrency_(n) {
   return `$${Number(n).toFixed(2)}`;

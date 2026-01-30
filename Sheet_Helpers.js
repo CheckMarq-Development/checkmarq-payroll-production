@@ -73,3 +73,7 @@ function indexColumns_(headers, map) {
 
   return idx;
 }
+function getOrCreateFolder_(parent, name) {
+  const it = parent.getFoldersByName(name);
+  return it.hasNext() ? it.next() : parent.createFolder(name);
+}
