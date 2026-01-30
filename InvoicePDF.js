@@ -287,19 +287,5 @@ function getOrCreateFolder_(parent, name) {
   return it.hasNext() ? it.next() : parent.createFolder(name);
 }
 
-function indexColumns_(headers, map) {
-  const out = {};
-  const norm = s => String(s || "").trim().toLowerCase();
-
-  headers.forEach((h, i) => {
-    Object.keys(map).forEach(k => {
-      if (norm(h) === norm(map[k])) {
-        out[k] = i;
-      }
-    });
-  });
-
-  return out;
-}
 
 

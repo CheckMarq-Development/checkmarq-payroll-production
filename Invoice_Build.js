@@ -154,22 +154,6 @@ if (da !== db) return da - db;
 }
 
 /************ HELPERS ************/
-function indexColumns_(headers, map) {
-  const normalize = s =>
-    String(s).toLowerCase().replace(/\u00a0/g, " ").trim();
-
-  const norm = headers.map(normalize);
-  const idx = {};
-
-  Object.keys(map).forEach(k => {
-    const i = norm.indexOf(normalize(map[k]));
-    if (i === -1) throw new Error(`Missing column: ${map[k]}`);
-    idx[k] = i;
-  });
-
-  return idx;
-}
-
 function normKey_(v) {
   return String(v == null ? "" : v)
     .replace(/\u00A0/g, " ")

@@ -56,14 +56,20 @@ function assertPayPeriodConfigured_() {
     );
   }
 }
-function onOpen_SheetHelpers_() {
-  SpreadsheetApp.getUi()
-    .createMenu("Payroll")
-    .addItem("Reset for New Pay Period", "resetForNewPayPeriod")
-    .addSeparator()
-    .addItem("Import Raw Visits", "importRawVisits") // existing
-    .addItem("Rebuild Payroll & Invoices", "recalculatePayrollAndInvoices") // existing
-    .addSeparator()
-    .addItem("Publish Final Snapshot", "publishFinalWorkbookCopy")
-    .addToUi();
+
+function indexColumns_(headers, map) {
+  const normalize = s =>
+    String(s).toLowerCase().replace(/\u00a0/g, " ").trim();
+
+  const normalizedHeaders = headers.map(normalize);
+  const idx = {};
+
+  Object.keys(map).forEach(k => {
+    const target = normalize(map[k]);
+    const i = normalizedHeaders.indexOf(target);
+    if (i === -1) throw new Error(`Missing column: ${map[k]}`);
+    idx[k] = i;
+  });
+
+  return idx;
 }

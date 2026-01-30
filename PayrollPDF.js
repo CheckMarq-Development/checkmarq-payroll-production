@@ -315,16 +315,6 @@ function getOrCreateFolder_(parent, name) {
   return it.hasNext() ? it.next() : parent.createFolder(name);
 }
 
-function indexColumns_(headers, map) {
-  const out = {};
-  headers.forEach((h, i) => {
-    Object.keys(map).forEach(k => {
-      if (h === map[k]) out[k] = i;
-    });
-  });
-  return out;
-}
-
 function formatCurrency_(n) {
   return `$${Number(n).toFixed(2)}`;
 }

@@ -56,6 +56,17 @@ function addEmailMenus_() {
     .addToUi();
 }
 
+function onOpen_SheetHelpers_() {
+  SpreadsheetApp.getUi()
+    .createMenu("Payroll")
+    .addItem("Reset for New Pay Period", "resetForNewPayPeriod")
+    .addSeparator()
+    .addItem("Import Raw Visits", "importRawVisits") // existing
+    .addItem("Rebuild Payroll & Invoices", "recalculatePayrollAndInvoices") // existing
+    .addSeparator()
+    .addItem("Publish Final Snapshot", "publishFinalWorkbookCopy")
+    .addToUi();
+}
 
 /************ ADMIN CONFIG ************/
 function getAdminConfig_() {
