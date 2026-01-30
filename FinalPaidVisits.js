@@ -139,7 +139,7 @@ function buildPBPTPayrollFromDerived_(pbptSheet) {
     VISIT: idx("Visit type"),
     DATE: idx("Visit scheduled date"),
     HA: idx("HA Name"),
-    PAY: idx("Price agreed between HA & Clinician")
+    PAY: idx("Price agreed between HA & Clinician"),
     RATE: idx("HA Initial price")
   };
 
